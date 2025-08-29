@@ -1,6 +1,5 @@
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Environment } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CoopModel from "@/three/CoopModel";
@@ -18,14 +17,11 @@ export default function BlueprintViewer() {
     <div className="grid lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2">
         <div className="bg-muted/20 blueprint-3d rounded-xl h-96 relative overflow-hidden border-2 border-dashed border-border">
-          <Canvas>
+          <Canvas camera={{ position: [15, 10, 15], fov: 60 }}>
             <Suspense fallback={null}>
-              <PerspectiveCamera makeDefault position={[15, 10, 15]} />
               <ambientLight intensity={0.5} />
               <directionalLight position={[10, 10, 5]} intensity={1} />
-              <Environment preset="sunset" />
               <CoopModel config={config} />
-              <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
             </Suspense>
           </Canvas>
           
