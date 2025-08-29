@@ -1,0 +1,292 @@
+Title:
+Chicken Coop Blueprint Generator (TypeScript + React + Express + TailwindCSS, ESLint, pdf-lib, Vitest, Render-ready)
+
+Prompt for Replit AI:
+
+Build a full-stack production-ready web application in TypeScript with a monorepo layout that generates custom chicken coop blueprints from user input.
+
+🔹 Requirements
+
+TypeScript strict mode everywhere
+
+Frontend: React (Vite) + TailwindCSS
+
+Backend: Express (Node.js)
+
+State management: Context API + hooks
+
+3D Blueprints: React Three Fiber (Three.js)
+
+PDF Export: pdf-lib
+
+Linting: ESLint (eslint:recommended + @typescript-eslint plugin)
+
+Testing: Vitest with working examples (frontend + backend)
+
+Monorepo structure: client/, server/, shared/
+
+Deployment: Render.com (with render.yaml)
+
+Features out of the box:
+
+CoopForm → lets user describe coop in plain English
+
+Backend API parses description → returns structured config
+
+PDF export: materials list + step-by-step instructions
+
+3D Viewer (React Three Fiber) renders coop structure
+
+🔹 File Structure
+chicken-coop-blueprint/
+│── client/                   # Frontend
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   ├── eslintrc.json
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   ├── src/
+│   │   ├── main.tsx
+│   │   ├── App.tsx
+│   │   ├── pages/
+│   │   │   ├── Home.tsx
+│   │   │   └── Results.tsx
+│   │   ├── components/
+│   │   │   ├── CoopForm.tsx
+│   │   │   ├── BlueprintViewer.tsx
+│   │   │   ├── MaterialsList.tsx
+│   │   │   └── Instructions.tsx
+│   │   ├── context/CoopContext.tsx
+│   │   ├── services/api.ts
+│   │   ├── three/CoopModel.tsx
+│   │   └── tests/CoopForm.test.tsx
+│
+│── server/                   # Backend
+│   ├── tsconfig.json
+│   ├── eslintrc.json
+│   ├── index.ts
+│   ├── routes/coop.ts
+│   ├── services/
+│   │   ├── blueprintGenerator.ts
+│   │   ├── materialsCalculator.ts
+│   │   └── instructionsGenerator.ts
+│   ├── utils/parseInput.ts
+│   └── tests/parseInput.test.ts
+│
+│── shared/                   # Shared Types
+│   └── types.ts
+│
+│── package.json              # Root scripts
+│── render.yaml               # Render deployment config
+
+🔹 Example Shared Types
+
+shared/types.ts
+
+export interface CoopConfig {
+  chickens: number;
+  nestingBox: boolean;
+  roostingBar: boolean;
+  chickenRun: boolean;
+  wheels: boolean;
+  roofStyle: "gable" | "flat" | "slanted";
+  size: "small" | "medium" | "large";
+  material: string;
+}
+
+🔹 Backend Example
+
+server/utils/parseInput.ts
+
+import { CoopConfig } from "../../shared/types";
+
+export function parseInput(input: string): CoopConfig {
+  const lowered = input.toLowerCase();
+
+  return {
+    chickens: /(\d+)\s*chicken/.test(lowered) ? parseInt(RegExp.$1, 10) : 4,
+    nestingBox: lowered.includes("nest"),
+    roostingBar: lowered.includes("roost"),
+    chickenRun: lowered.includes("run"),
+    wheels: lowered.includes("wheel"),
+    roofStyle: lowered.includes("gable")
+      ? "gable"
+      : lowered.includes("flat")
+      ? "flat"
+      : "slanted",
+    size: lowered.includes("large")
+      ? "large"
+      : lowered.includes("medium")
+      ? "medium"
+      : "small",
+    material: lowered.includes("metal") ? "metal" : "wood"
+  };
+}
+
+
+server/routes/coop.ts
+
+import { Router } from "express";
+import { parseInput } from "../utils/parseInput";
+import { CoopConfig } from "../../shared/types";
+import { generatePDF } from "../services/instructionsGenerator";
+
+const router = Router();
+
+router.post("/", async (req, res) => {
+  const { description } = req.body as { description: string };
+  if (!description) {
+    return res.status(400).json({ error: "Description is required" });
+  }
+
+  const config: CoopConfig = parseInput(description);
+  const pdfBytes = await generatePDF(config);
+
+  res.json({
+    config,
+    pdf: Buffer.from(pdfBytes).toString("base64")
+  });
+});
+
+export default router;
+
+
+server/services/instructionsGenerator.ts
+
+import { PDFDocument, StandardFonts } from "pdf-lib";
+import { CoopConfig } from "../../shared/types";
+
+export async function generatePDF(config: CoopConfig): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([600, 800]);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  const { chickens, size, roofStyle, material } = config;
+
+  page.drawText("Chicken Coop Instructions", { x: 50, y: 750, font, size: 20 });
+  page.drawText(`For ${chickens} chickens`, { x: 50, y: 720, font, size: 14 });
+  page.drawText(`Size: ${size}`, { x: 50, y: 700, font, size: 14 });
+  page.drawText(`Roof Style: ${roofStyle}`, { x: 50, y: 680, font, size: 14 });
+  page.drawText(`Material: ${material}`, { x: 50, y: 660, font, size: 14 });
+
+  return await pdfDoc.save();
+}
+
+
+server/index.ts
+
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import coopRouter from "./routes/coop";
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+app.use("/api/coop", coopRouter);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+🔹 Frontend Example
+
+client/src/context/CoopContext.tsx
+
+import React, { createContext, useState, ReactNode } from "react";
+import { CoopConfig } from "../../../shared/types";
+
+interface CoopContextValue {
+  config: CoopConfig | null;
+  setConfig: (c: CoopConfig) => void;
+}
+
+export const CoopContext = createContext<CoopContextValue>({
+  config: null,
+  setConfig: () => {}
+});
+
+export function CoopProvider({ children }: { children: ReactNode }) {
+  const [config, setConfig] = useState<CoopConfig | null>(null);
+  return (
+    <CoopContext.Provider value={{ config, setConfig }}>
+      {children}
+    </CoopContext.Provider>
+  );
+}
+
+
+client/src/components/CoopForm.tsx
+
+import React, { useState, useContext } from "react";
+import { CoopContext } from "../context/CoopContext";
+import { sendCoopDescription } from "../services/api";
+
+export default function CoopForm() {
+  const [description, setDescription] = useState("");
+  const { setConfig } = useContext(CoopContext);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const response = await sendCoopDescription(description);
+    setConfig(response.config);
+
+    const pdfBlob = new Blob(
+      [Uint8Array.from(atob(response.pdf), c => c.charCodeAt(0))],
+      { type: "application/pdf" }
+    );
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "coop-instructions.pdf";
+    link.click();
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 p-4">
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Describe your chicken coop (e.g., 6 chickens, gable roof, wheels)..."
+        className="w-full p-2 border rounded"
+      />
+      <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">
+        Generate Blueprint
+      </button>
+    </form>
+  );
+}
+
+
+client/src/services/api.ts
+
+import axios from "axios";
+import { CoopConfig } from "../../../shared/types";
+
+export async function sendCoopDescription(description: string): Promise<{
+  config: CoopConfig;
+  pdf: string;
+}> {
+  const res = await axios.post("http://localhost:5000/api/coop", { description });
+  return res.data;
+}
+
+🔹 Example Test
+
+client/src/tests/CoopForm.test.tsx
+
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import CoopForm from "../components/CoopForm";
+import { CoopProvider } from "../context/CoopContext";
+
+describe("CoopForm", () => {
+  it("lets user type a description", () => {
+    render(<CoopProvider><CoopForm /></CoopProvider>);
+    const input = screen.getByPlaceholderText(/describe your chicken coop/i);
+    fireEvent.change(input, { target: { value: "6 chickens with wheels" } });
+    expect((input as HTMLTextAreaElement).value).toBe("6 chickens with wheels");
+  });
+});
