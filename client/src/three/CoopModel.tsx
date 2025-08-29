@@ -1,14 +1,15 @@
 import React, { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
+import { Box, Plane } from "@react-three/drei";
+import { Mesh } from "three";
 import { CoopConfig } from "@shared/types";
-import * as THREE from "three";
 
 interface CoopModelProps {
   config: CoopConfig;
 }
 
 export default function CoopModel({ config }: CoopModelProps) {
-  const mainStructureRef = useRef<THREE.Mesh>(null);
+  const mainStructureRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
   useFrame((state) => {
@@ -30,58 +31,69 @@ export default function CoopModel({ config }: CoopModelProps) {
   return (
     <group>
       {/* Ground plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
-        <planeGeometry args={[20, 20]} />
+      <Plane 
+        args={[20, 20]} 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[0, -1, 0]}
+      >
         <meshStandardMaterial color="#8db388" />
-      </mesh>
+      </Plane>
 
       {/* Main structure */}
-      <mesh
+      <Box
         ref={mainStructureRef}
+        args={[width, height, depth]}
         position={[0, height / 2, 0]}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
       >
-        <boxGeometry args={[width, height, depth]} />
         <meshStandardMaterial 
           color={config.material === "metal" ? "#94a3b8" : "#d97706"} 
           opacity={hovered ? 0.8 : 1}
           transparent
         />
-      </mesh>
+      </Box>
 
       {/* Roof */}
       {config.roofStyle === "gable" ? (
         <group position={[0, height + roofHeight / 2, 0]}>
           {/* Roof left */}
-          <mesh rotation={[0, 0, Math.PI / 6]} position={[0, 0, -depth / 4]}>
-            <boxGeometry args={[width + 0.5, 0.2, depth / 2]} />
+          <Box 
+            args={[width + 0.5, 0.2, depth / 2]} 
+            rotation={[0, 0, Math.PI / 6]}
+            position={[0, 0, -depth / 4]}
+          >
             <meshStandardMaterial color="#64748b" />
-          </mesh>
+          </Box>
           {/* Roof right */}
-          <mesh rotation={[0, 0, -Math.PI / 6]} position={[0, 0, depth / 4]}>
-            <boxGeometry args={[width + 0.5, 0.2, depth / 2]} />
+          <Box 
+            args={[width + 0.5, 0.2, depth / 2]} 
+            rotation={[0, 0, -Math.PI / 6]}
+            position={[0, 0, depth / 4]}
+          >
             <meshStandardMaterial color="#64748b" />
-          </mesh>
+          </Box>
         </group>
       ) : (
-        <mesh position={[0, height + roofHeight / 2, 0]}>
-          <boxGeometry args={[width + 0.5, 0.2, depth + 0.5]} />
+        <Box 
+          args={[width + 0.5, 0.2, depth + 0.5]}
+          position={[0, height + roofHeight / 2, 0]}
+        >
           <meshStandardMaterial color="#64748b" />
-        </mesh>
+        </Box>
       )}
 
       {/* Nesting boxes */}
       {config.nestingBox && (
         <group>
           {Array.from({ length: Math.ceil(config.chickens / 3) }).map((_, i) => (
-            <mesh
+            <Box
               key={i}
+              args={[1, 1, 1]}
               position={[width / 2 + 0.6, 2 + i * 1.2, -depth / 2 + i * 1.5]}
             >
-              <boxGeometry args={[1, 1, 1]} />
               <meshStandardMaterial color="#3b82f6" />
-            </mesh>
+            </Box>
           ))}
         </group>
       )}
@@ -90,13 +102,13 @@ export default function CoopModel({ config }: CoopModelProps) {
       {config.roostingBar && (
         <group>
           {[0, 1.5].map((offset, i) => (
-            <mesh
+            <Box
               key={i}
+              args={[width - 2, 0.1, 0.1]}
               position={[0, 2 + offset, depth / 4]}
             >
-              <boxGeometry args={[width - 2, 0.1, 0.1]} />
               <meshStandardMaterial color="#8b5cf6" />
-            </mesh>
+            </Box>
           ))}
         </group>
       )}
@@ -105,10 +117,13 @@ export default function CoopModel({ config }: CoopModelProps) {
       {config.chickenRun && (
         <group position={[width + 3, 0, 0]}>
           {/* Run floor */}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-            <planeGeometry args={[width * 1.5, depth]} />
+          <Plane 
+            args={[width * 1.5, depth]} 
+            rotation={[-Math.PI / 2, 0, 0]} 
+            position={[0, 0, 0]}
+          >
             <meshStandardMaterial color="#92a362" />
-          </mesh>
+          </Plane>
           
           {/* Run fence */}
           {[
@@ -117,13 +132,13 @@ export default function CoopModel({ config }: CoopModelProps) {
             [-width * 0.75, height / 2, depth / 2],
             [width * 0.75, height / 2, depth / 2],
           ].map((pos, i) => (
-            <mesh
+            <Box
               key={i}
+              args={i < 2 ? [width * 1.5, height, 0.1] : [0.1, height, depth]}
               position={pos as [number, number, number]}
             >
-              <boxGeometry args={i < 2 ? [width * 1.5, height, 0.1] : [0.1, height, depth]} />
               <meshStandardMaterial color="#f97316" wireframe />
-            </mesh>
+            </Box>
           ))}
         </group>
       )}
@@ -137,13 +152,13 @@ export default function CoopModel({ config }: CoopModelProps) {
             [-width / 2 + 0.5, -0.5, depth / 2 - 0.5],
             [width / 2 - 0.5, -0.5, depth / 2 - 0.5],
           ].map((pos, i) => (
-            <mesh
+            <Box
               key={i}
+              args={[0.6, 0.6, 0.3]}
               position={pos as [number, number, number]}
             >
-              <boxGeometry args={[0.6, 0.6, 0.3]} />
               <meshStandardMaterial color="#1f2937" />
-            </mesh>
+            </Box>
           ))}
         </group>
       )}

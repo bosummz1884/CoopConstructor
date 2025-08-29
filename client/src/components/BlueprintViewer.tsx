@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
+import { OrbitControls, PerspectiveCamera, Environment } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CoopModel from "@/three/CoopModel";
@@ -16,44 +17,17 @@ export default function BlueprintViewer() {
   return (
     <div className="grid lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2">
-        <div className="bg-muted/20 blueprint-3d rounded-xl h-96 relative overflow-hidden border-2 border-dashed border-border flex items-center justify-center">
-          <div className="text-center p-8">
-            <div className="w-24 h-24 mx-auto mb-4 bg-primary/20 rounded-lg flex items-center justify-center">
-              <Home className="w-12 h-12 text-primary" />
-            </div>
-            <h3 className="font-medium text-foreground mb-2">3D Visualization</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Your {config.size} chicken coop design for {config.chickens} chickens
-            </p>
-            <div className="space-y-2 text-xs text-muted-foreground">
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                <span>Material: {config.material}</span>
-              </div>
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                <span>Roof: {config.roofStyle}</span>
-              </div>
-              {config.nestingBox && (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded"></div>
-                  <span>Includes nesting boxes</span>
-                </div>
-              )}
-              {config.chickenRun && (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-3 h-3 bg-purple-500 rounded"></div>
-                  <span>Includes chicken run</span>
-                </div>
-              )}
-              {config.wheels && (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-3 h-3 bg-gray-500 rounded"></div>
-                  <span>Mobile with wheels</span>
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="bg-muted/20 blueprint-3d rounded-xl h-96 relative overflow-hidden border-2 border-dashed border-border">
+          <Canvas>
+            <Suspense fallback={null}>
+              <PerspectiveCamera makeDefault position={[15, 10, 15]} />
+              <ambientLight intensity={0.5} />
+              <directionalLight position={[10, 10, 5]} intensity={1} />
+              <Environment preset="sunset" />
+              <CoopModel config={config} />
+              <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+            </Suspense>
+          </Canvas>
           
           {/* Legend */}
           <div className="absolute top-4 left-4 bg-card/90 rounded-lg p-3 shadow-lg" data-testid="legend-3d">

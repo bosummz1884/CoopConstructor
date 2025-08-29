@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicken Coop Blueprint Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+                }
+            },
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(222.2 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222.2 84% 4.9%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(222.2 84% 4.9%);
+            --primary: hsl(142 76% 36%);
+            --primary-foreground: hsl(0 0% 100%);
+            --secondary: hsl(210 40% 96%);
+            --secondary-foreground: hsl(222.2 47% 11%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215.4 16.3% 46.9%);
+            --accent: hsl(217 91% 60%);
+            --accent-foreground: hsl(0 0% 100%);
+            --destructive: hsl(0 84% 60%);
+            --destructive-foreground: hsl(0 0% 100%);
+            --border: hsl(214.3 31.8% 91.4%);
+            --input: hsl(214.3 31.8% 91.4%);
+            --ring: hsl(142 76% 36%);
+            --radius: 8px;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+        }
+        
+        .form-container {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-spinner {
+            border: 3px solid hsl(var(--muted));
+            border-top: 3px solid hsl(var(--primary));
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tab-active {
+            border-bottom: 2px solid hsl(var(--primary));
+            color: hsl(var(--primary));
+        }
+
+        .blueprint-3d {
+            background: linear-gradient(45deg, #f0f4f8 25%, #e2e8f0 25%, #e2e8f0 50%, #f0f4f8 50%, #f0f4f8 75%, #e2e8f0 75%);
+            background-size: 20px 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="font-sans bg-background text-foreground min-h-screen">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-card border-b border-border shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-home text-primary-foreground text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-foreground">Chicken Coop Blueprint Generator</h1>
+                        <p class="text-sm text-muted-foreground">AI-powered coop design & planning</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-muted-foreground hover:text-foreground transition-colors">
+                        <i class="fas fa-question-circle text-lg"></i>
+                    </button>
+                    <button class="text-muted-foreground hover:text-foreground transition-colors">
+                        <i class="fas fa-cog text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="flex-1">
+        <!-- @COMPONENT: HeroSection -->
+        <section class="gradient-bg py-20 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="form-container p-8 rounded-xl shadow-xl border border-white/20">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-foreground mb-4">Design Your Perfect Chicken Coop</h2>
+                        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+                            Describe your chicken coop in natural language and get a complete blueprint with 3D visualization, materials list, and step-by-step instructions.
+                        </p>
+                    </div>
+
+                    <!-- @COMPONENT: CoopForm -->
+                    <div class="space-y-6" data-mock="true">
+                        <div class="space-y-4">
+                            <label class="block text-left">
+                                <span class="text-sm font-medium text-foreground mb-2 block">Describe your chicken coop</span>
+                                <textarea 
+                                    data-bind="description" 
+                                    placeholder="I need a coop for 8 chickens with a gable roof, nesting boxes, roosting bars, wheels for mobility, and a chicken run. Make it medium size with wood construction and weatherproof coating."
+                                    class="w-full h-32 p-4 border border-input bg-card text-foreground rounded-lg resize-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground"
+                                    data-mock="true">I need a coop for 8 chickens with a gable roof, nesting boxes, roosting bars, wheels for mobility, and a chicken run. Make it medium size with wood construction and weatherproof coating.</textarea>
+                            </label>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Number of Chickens</label>
+                                    <input type="number" value="8" data-bind="chickens" class="w-full p-3 border border-input bg-card text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all" data-mock="true" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Size Preference</label>
+                                    <select class="w-full p-3 border border-input bg-card text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all" data-mock="true">
+                                        <option>Small (2-4 chickens)</option>
+                                        <option selected>Medium (5-8 chickens)</option>
+                                        <option>Large (9+ chickens)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-foreground mb-2">Material</label>
+                                    <select class="w-full p-3 border border-input bg-card text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all" data-mock="true">
+                                        <option selected>Wood</option>
+                                        <option>Metal</option>
+                                        <option>Mixed Materials</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button 
+                                id="generateButton"
+                                data-event="click:handleGenerate" 
+                                data-implementation="Should parse description, call API, and display results"
+                                class="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg font-medium transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center space-x-2">
+                                <i class="fas fa-magic"></i>
+                                <span>Generate Blueprint</span>
+                            </button>
+                            <button class="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-6 py-4 rounded-lg font-medium transition-all flex items-center space-x-2">
+                                <i class="fas fa-save"></i>
+                                <span class="hidden sm:inline">Save Draft</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: CoopForm -->
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: HeroSection -->
+
+        <!-- @COMPONENT: ResultsSection -->
+        <section id="resultsSection" class="py-16 px-4 bg-card">
+            <div class="max-w-7xl mx-auto">
+                <!-- Status Banner -->
+                <div class="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8 flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-primary-foreground text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-foreground">Blueprint Generated Successfully</h3>
+                        <p class="text-sm text-muted-foreground">Your custom chicken coop design is ready for review</p>
+                    </div>
+                    <div class="ml-auto flex items-center space-x-2">
+                        <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all">
+                            <i class="fas fa-download"></i>
+                            <span>Download PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Configuration Summary -->
+                <div class="bg-muted/30 rounded-lg p-6 mb-8">
+                    <h3 class="font-semibold text-foreground mb-4 flex items-center space-x-2">
+                        <i class="fas fa-info-circle text-accent"></i>
+                        <span>Coop Configuration</span>
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div data-bind="config.chickens">
+                            <span class="text-muted-foreground">Chickens:</span>
+                            <span class="font-medium text-foreground ml-2" data-mock="true">8</span>
+                        </div>
+                        <div data-bind="config.size">
+                            <span class="text-muted-foreground">Size:</span>
+                            <span class="font-medium text-foreground ml-2" data-mock="true">Medium</span>
+                        </div>
+                        <div data-bind="config.roofStyle">
+                            <span class="text-muted-foreground">Roof:</span>
+                            <span class="font-medium text-foreground ml-2" data-mock="true">Gable</span>
+                        </div>
+                        <div data-bind="config.material">
+                            <span class="text-muted-foreground">Material:</span>
+                            <span class="font-medium text-foreground ml-2" data-mock="true">Wood</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Navigation -->
+                <div class="border-b border-border mb-8">
+                    <nav class="flex space-x-8" data-implementation="Tab switching functionality needed">
+                        <button class="tab-active py-3 px-1 font-medium text-sm transition-colors" data-tab="3d-view">
+                            <i class="fas fa-cube mr-2"></i>3D Visualization
+                        </button>
+                        <button class="py-3 px-1 font-medium text-sm text-muted-foreground hover:text-foreground transition-colors" data-tab="materials">
+                            <i class="fas fa-list mr-2"></i>Materials List
+                        </button>
+                        <button class="py-3 px-1 font-medium text-sm text-muted-foreground hover:text-foreground transition-colors" data-tab="instructions">
+                            <i class="fas fa-tools mr-2"></i>Instructions
+                        </button>
+                        <button class="py-3 px-1 font-medium text-sm text-muted-foreground hover:text-foreground transition-colors" data-tab="dimensions">
+                            <i class="fas fa-ruler-combined mr-2"></i>Dimensions
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- @COMPONENT: 3D Visualization Tab -->
+                    <div id="3d-view" class="tab-panel">
+                        <div class="grid lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2">
+                                <div class="bg-muted/20 blueprint-3d rounded-xl h-96 flex items-center justify-center border-2 border-dashed border-border relative overflow-hidden" data-implementation="React Three Fiber 3D model rendering">
+                                    <div class="text-center space-y-4">
+                                        <div class="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+                                            <i class="fas fa-cube text-primary text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-foreground">3D Model Viewer</h4>
+                                            <p class="text-sm text-muted-foreground">Interactive chicken coop visualization</p>
+                                        </div>
+                                    </div>
+                                    <!-- Placeholder for 3D elements -->
+                                    <div class="absolute top-4 left-4 bg-card/90 rounded-lg p-3 shadow-lg">
+                                        <div class="text-xs text-muted-foreground space-y-1">
+                                            <div class="flex items-center space-x-2">
+                                                <div class="w-3 h-3 bg-primary rounded-sm"></div>
+                                                <span>Main Structure</span>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <div class="w-3 h-3 bg-accent rounded-sm"></div>
+                                                <span>Nesting Boxes</span>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <div class="w-3 h-3 bg-orange-500 rounded-sm"></div>
+                                                <span>Chicken Run</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="absolute bottom-4 right-4 bg-card/90 rounded-lg p-2 shadow-lg">
+                                        <div class="flex items-center space-x-2 text-xs text-muted-foreground">
+                                            <i class="fas fa-mouse"></i>
+                                            <span>Click & drag to rotate</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-6">
+                                <!-- View Controls -->
+                                <div class="bg-card border border-border rounded-lg p-4">
+                                    <h4 class="font-medium text-foreground mb-3">View Controls</h4>
+                                    <div class="space-y-3">
+                                        <button class="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2">
+                                            <i class="fas fa-home"></i>
+                                            <span>Front View</span>
+                                        </button>
+                                        <button class="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2">
+                                            <i class="fas fa-eye"></i>
+                                            <span>Side View</span>
+                                        </button>
+                                        <button class="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span>Top View</span>
+                                        </button>
+                                        <button class="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2">
+                                            <i class="fas fa-expand"></i>
+                                            <span>Isometric</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Stats -->
+                                <div class="bg-card border border-border rounded-lg p-4">
+                                    <h4 class="font-medium text-foreground mb-3">Specifications</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between" data-mock="true">
+                                            <span class="text-muted-foreground">Dimensions:</span>
+                                            <span class="font-medium">6' × 8' × 7'</span>
+                                        </div>
+                                        <div class="flex justify-between" data-mock="true">
+                                            <span class="text-muted-foreground">Floor Space:</span>
+                                            <span class="font-medium">48 sq ft</span>
+                                        </div>
+                                        <div class="flex justify-between" data-mock="true">
+                                            <span class="text-muted-foreground">Run Size:</span>
+                                            <span class="font-medium">6' × 12'</span>
+                                        </div>
+                                        <div class="flex justify-between" data-mock="true">
+                                            <span class="text-muted-foreground">Nesting Boxes:</span>
+                                            <span class="font-medium">3 boxes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: 3D Visualization Tab -->
+
+                    <!-- @COMPONENT: Materials List Tab -->
+                    <div id="materials" class="tab-panel hidden">
+                        <div class="grid lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2">
+                                <div class="bg-card border border-border rounded-lg overflow-hidden">
+                                    <div class="px-6 py-4 border-b border-border">
+                                        <h3 class="font-semibold text-foreground">Required Materials</h3>
+                                        <p class="text-sm text-muted-foreground">Complete shopping list for your chicken coop</p>
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full" data-mock="true">
+                                            <thead class="bg-muted/50">
+                                                <tr>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Material</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Quantity</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Size/Specs</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Est. Cost</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-border" data-implementation="MAP materials list">
+                                                <tr class="hover:bg-muted/30 transition-colors">
+                                                    <td class="px-6 py-4 text-sm font-medium text-foreground">Pressure Treated Lumber</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">12 pieces</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">2x4x8ft</td>
+                                                    <td class="px-6 py-4 text-sm font-medium text-accent">$96.00</td>
+                                                </tr>
+                                                <tr class="hover:bg-muted/30 transition-colors">
+                                                    <td class="px-6 py-4 text-sm font-medium text-foreground">Plywood Siding</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">4 sheets</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">4x8ft 1/2"</td>
+                                                    <td class="px-6 py-4 text-sm font-medium text-accent">$120.00</td>
+                                                </tr>
+                                                <tr class="hover:bg-muted/30 transition-colors">
+                                                    <td class="px-6 py-4 text-sm font-medium text-foreground">Hardware Cloth</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">50 sq ft</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">1/2" mesh</td>
+                                                    <td class="px-6 py-4 text-sm font-medium text-accent">$75.00</td>
+                                                </tr>
+                                                <tr class="hover:bg-muted/30 transition-colors">
+                                                    <td class="px-6 py-4 text-sm font-medium text-foreground">Metal Roofing</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">60 sq ft</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">Corrugated steel</td>
+                                                    <td class="px-6 py-4 text-sm font-medium text-accent">$180.00</td>
+                                                </tr>
+                                                <tr class="hover:bg-muted/30 transition-colors">
+                                                    <td class="px-6 py-4 text-sm font-medium text-foreground">Hinges & Hardware</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">1 set</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">Heavy duty</td>
+                                                    <td class="px-6 py-4 text-sm font-medium text-accent">$45.00</td>
+                                                </tr>
+                                                <tr class="hover:bg-muted/30 transition-colors">
+                                                    <td class="px-6 py-4 text-sm font-medium text-foreground">Wheels (Caster)</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">4 pieces</td>
+                                                    <td class="px-6 py-4 text-sm text-muted-foreground">6" heavy duty</td>
+                                                    <td class="px-6 py-4 text-sm font-medium text-accent">$80.00</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-6">
+                                <!-- Cost Summary -->
+                                <div class="bg-card border border-border rounded-lg p-6">
+                                    <h4 class="font-medium text-foreground mb-4">Cost Summary</h4>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex justify-between" data-mock="true">
+                                            <span class="text-muted-foreground">Materials:</span>
+                                            <span class="font-medium">$596.00</span>
+                                        </div>
+                                        <div class="flex justify-between" data-mock="true">
+                                            <span class="text-muted-foreground">Hardware:</span>
+                                            <span class="font-medium">$125.00</span>
+                                        </div>
+                                        <div class="flex justify-between" data-mock="true">
+                                            <span class="text-muted-foreground">Tax (8%):</span>
+                                            <span class="font-medium">$57.68</span>
+                                        </div>
+                                        <div class="border-t border-border pt-3 flex justify-between">
+                                            <span class="font-medium text-foreground">Total:</span>
+                                            <span class="font-bold text-primary text-lg">$778.68</span>
+                                        </div>
+                                    </div>
+                                    <button class="w-full mt-4 bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                                        <i class="fas fa-shopping-cart"></i>
+                                        <span>Export Shopping List</span>
+                                    </button>
+                                </div>
+
+                                <!-- Tools Required -->
+                                <div class="bg-card border border-border rounded-lg p-6">
+                                    <h4 class="font-medium text-foreground mb-4">Tools Required</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex items-center space-x-2" data-mock="true">
+                                            <i class="fas fa-check text-primary"></i>
+                                            <span>Circular saw</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2" data-mock="true">
+                                            <i class="fas fa-check text-primary"></i>
+                                            <span>Drill/driver</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2" data-mock="true">
+                                            <i class="fas fa-check text-primary"></i>
+                                            <span>Measuring tape</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2" data-mock="true">
+                                            <i class="fas fa-check text-primary"></i>
+                                            <span>Level</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2" data-mock="true">
+                                            <i class="fas fa-check text-primary"></i>
+                                            <span>Socket wrench set</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: Materials List Tab -->
+
+                    <!-- @COMPONENT: Instructions Tab -->
+                    <div id="instructions" class="tab-panel hidden">
+                        <div class="space-y-8" data-mock="true">
+                            <div class="bg-card border border-border rounded-lg p-6">
+                                <h3 class="font-semibold text-foreground mb-4">Step-by-Step Build Instructions</h3>
+                                <p class="text-muted-foreground mb-6">Follow these detailed instructions to build your chicken coop safely and efficiently.</p>
+                                
+                                <div class="space-y-6" data-implementation="MAP build steps">
+                                    <!-- Step 1 -->
+                                    <div class="border-l-4 border-primary pl-6">
+                                        <div class="flex items-start space-x-4">
+                                            <div class="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                                            <div class="flex-1">
+                                                <h4 class="font-medium text-foreground mb-2">Prepare the Foundation</h4>
+                                                <p class="text-muted-foreground mb-3">Level the ground and create a solid base for your chicken coop. This ensures stability and prevents moisture issues.</p>
+                                                <ul class="text-sm text-muted-foreground space-y-1 ml-4">
+                                                    <li>• Clear and level a 8' × 14' area</li>
+                                                    <li>• Lay gravel base 2" thick</li>
+                                                    <li>• Install pressure-treated skids</li>
+                                                </ul>
+                                                <div class="mt-3 text-sm text-accent font-medium">⏱ Estimated time: 2-3 hours</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 2 -->
+                                    <div class="border-l-4 border-muted pl-6">
+                                        <div class="flex items-start space-x-4">
+                                            <div class="w-8 h-8 bg-muted text-muted-foreground rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                                            <div class="flex-1">
+                                                <h4 class="font-medium text-foreground mb-2">Build the Floor Frame</h4>
+                                                <p class="text-muted-foreground mb-3">Construct a sturdy floor frame using pressure-treated lumber to support the entire structure.</p>
+                                                <ul class="text-sm text-muted-foreground space-y-1 ml-4">
+                                                    <li>• Cut 2x4 lumber to size</li>
+                                                    <li>• Assemble rectangular frame with joists</li>
+                                                    <li>• Attach plywood flooring</li>
+                                                </ul>
+                                                <div class="mt-3 text-sm text-accent font-medium">⏱ Estimated time: 3-4 hours</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3 -->
+                                    <div class="border-l-4 border-muted pl-6">
+                                        <div class="flex items-start space-x-4">
+                                            <div class="w-8 h-8 bg-muted text-muted-foreground rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                                            <div class="flex-1">
+                                                <h4 class="font-medium text-foreground mb-2">Construct Wall Frames</h4>
+                                                <p class="text-muted-foreground mb-3">Build four wall frames, including openings for doors, windows, and nesting box access.</p>
+                                                <ul class="text-sm text-muted-foreground space-y-1 ml-4">
+                                                    <li>• Frame all four walls with 2x4 studs</li>
+                                                    <li>• Cut openings for door and windows</li>
+                                                    <li>• Install nesting box frame cutouts</li>
+                                                </ul>
+                                                <div class="mt-3 text-sm text-accent font-medium">⏱ Estimated time: 4-5 hours</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Continue with more steps... -->
+                                    <div class="text-center py-4">
+                                        <button class="text-accent hover:text-accent/80 font-medium transition-colors">
+                                            View All 12 Steps →
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Safety Tips -->
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                                <h4 class="font-medium text-orange-900 mb-3 flex items-center space-x-2">
+                                    <i class="fas fa-exclamation-triangle text-orange-600"></i>
+                                    <span>Safety Reminders</span>
+                                </h4>
+                                <ul class="text-sm text-orange-800 space-y-1">
+                                    <li>• Always wear safety glasses when cutting or drilling</li>
+                                    <li>• Use appropriate dust masks when cutting lumber</li>
+                                    <li>• Ensure all electrical work is done by a qualified electrician</li>
+                                    <li>• Check local building codes before construction</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: Instructions Tab -->
+
+                    <!-- @COMPONENT: Dimensions Tab -->
+                    <div id="dimensions" class="tab-panel hidden">
+                        <div class="grid lg:grid-cols-2 gap-8">
+                            <div class="space-y-6">
+                                <!-- Technical Drawings -->
+                                <div class="bg-card border border-border rounded-lg p-6">
+                                    <h3 class="font-semibold text-foreground mb-4">Technical Drawings</h3>
+                                    <div class="space-y-4">
+                                        <div class="bg-muted/20 h-64 rounded-lg border-2 border-dashed border-border flex items-center justify-center" data-implementation="Technical drawing display">
+                                            <div class="text-center">
+                                                <i class="fas fa-drafting-compass text-4xl text-muted-foreground mb-2"></i>
+                                                <p class="text-muted-foreground">Front Elevation View</p>
+                                                <p class="text-xs text-muted-foreground mt-1">Scale: 1/4" = 1'</p>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <button class="bg-secondary hover:bg-secondary/80 text-secondary-foreground p-3 rounded-lg text-sm transition-colors">
+                                                Side View
+                                            </button>
+                                            <button class="bg-secondary hover:bg-secondary/80 text-secondary-foreground p-3 rounded-lg text-sm transition-colors">
+                                                Floor Plan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-6">
+                                <!-- Dimensions Table -->
+                                <div class="bg-card border border-border rounded-lg p-6">
+                                    <h3 class="font-semibold text-foreground mb-4">Detailed Dimensions</h3>
+                                    <div class="space-y-4" data-mock="true">
+                                        <div class="space-y-2">
+                                            <h4 class="font-medium text-foreground text-sm">Main Coop Structure</h4>
+                                            <div class="text-sm space-y-1">
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Overall Length:</span>
+                                                    <span class="font-mono">96" (8 ft)</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Overall Width:</span>
+                                                    <span class="font-mono">72" (6 ft)</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Wall Height:</span>
+                                                    <span class="font-mono">84" (7 ft)</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Ridge Height:</span>
+                                                    <span class="font-mono">96" (8 ft)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="border-t border-border pt-4">
+                                            <h4 class="font-medium text-foreground text-sm">Nesting Boxes</h4>
+                                            <div class="text-sm space-y-1">
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Box Size:</span>
+                                                    <span class="font-mono">12" × 12" × 12"</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Quantity:</span>
+                                                    <span class="font-mono">3 boxes</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Height from Floor:</span>
+                                                    <span class="font-mono">18"</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="border-t border-border pt-4">
+                                            <h4 class="font-medium text-foreground text-sm">Chicken Run</h4>
+                                            <div class="text-sm space-y-1">
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Run Length:</span>
+                                                    <span class="font-mono">144" (12 ft)</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Run Width:</span>
+                                                    <span class="font-mono">72" (6 ft)</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-muted-foreground">Fence Height:</span>
+                                                    <span class="font-mono">72" (6 ft)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Cut List -->
+                                <div class="bg-card border border-border rounded-lg p-6">
+                                    <h3 class="font-semibold text-foreground mb-4">Lumber Cut List</h3>
+                                    <div class="text-xs space-y-2 font-mono" data-mock="true">
+                                        <div class="flex justify-between">
+                                            <span>2x4 × 96" (studs)</span>
+                                            <span>16 pieces</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>2x4 × 72" (plates)</span>
+                                            <span>8 pieces</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>2x4 × 69" (wall studs)</span>
+                                            <span>24 pieces</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Plywood ½" × 48" × 96"</span>
+                                            <span>4 sheets</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: Dimensions Tab -->
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: ResultsSection -->
+
+        <!-- @COMPONENT: Footer Actions -->
+        <section class="bg-muted/30 py-12 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h3 class="text-2xl font-bold text-foreground mb-4">Ready to Start Building?</h3>
+                <p class="text-muted-foreground mb-8">Download your complete blueprint package and get started on your chicken coop project today.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center space-x-2">
+                        <i class="fas fa-download"></i>
+                        <span>Download Complete PDF</span>
+                    </button>
+                    <button class="bg-card hover:bg-card/80 text-foreground border border-border px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center space-x-2">
+                        <i class="fas fa-redo"></i>
+                        <span>Create New Design</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: Footer Actions -->
+    </main>
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-card border-t border-border py-8 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-home text-primary-foreground text-sm"></i>
+                        </div>
+                        <span class="font-semibold text-foreground">Coop Blueprint Generator</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4">
+                        AI-powered chicken coop design tool that creates custom blueprints, materials lists, and step-by-step instructions for your backyard poultry housing needs.
+                    </p>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-xs text-muted-foreground">© 2024 Blueprint Generator</span>
+                        <a href="#" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
+                        <a href="#" class="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-medium text-foreground mb-3">Resources</h4>
+                    <ul class="space-y-2 text-sm text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">Design Gallery</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Building Tips</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Material Guide</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium text-foreground mb-3">Support</h4>
+                    <ul class="space-y-2 text-sm text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Feedback</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Status</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('[data-tab]');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.getAttribute('data-tab');
+                    
+                    // Remove active state from all tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('text-muted-foreground', 'hover:text-foreground');
+                    });
+                    
+                    // Add active state to clicked tab
+                    tab.classList.add('tab-active');
+                    tab.classList.remove('text-muted-foreground', 'hover:text-foreground');
+                    
+                    // Hide all tab panels
+                    tabPanels.forEach(panel => {
+                        panel.classList.add('hidden');
+                    });
+                    
+                    // Show target panel
+                    const targetPanel = document.getElementById(targetId);
+                    if (targetPanel) {
+                        targetPanel.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Simulate blueprint generation
+            const generateButton = document.getElementById('generateButton');
+            if (generateButton) {
+                generateButton.addEventListener('click', function() {
+                    // Show loading state
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = '<div class="loading-spinner"></div><span>Generating...</span>';
+                    this.disabled = true;
+                    
+                    // Simulate API call delay
+                    setTimeout(() => {
+                        this.innerHTML = originalContent;
+                        this.disabled = false;
+                        
+                        // Scroll to results
+                        document.getElementById('resultsSection').scrollIntoView({ 
+                            behavior: 'smooth' 
+                        });
+                    }, 3000);
+                });
+            }
+
+            // Mock interactive features
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('[data-event*="click"]')) {
+                    console.log('Event triggered:', e.target.getAttribute('data-event'));
+                    console.log('Implementation needed:', e.target.getAttribute('data-implementation'));
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
