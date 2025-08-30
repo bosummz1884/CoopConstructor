@@ -4,11 +4,23 @@ import { storage } from "./storage";
 import { parseInput } from "./utils/parseInput";
 import { generateBlueprint } from "./services/blueprintGenerator";
 import { CoopConfig, ApiResponse } from "@shared/types";
+import authRoutes from "./routes/auth.routes";
+import { authenticate } from "./middleware/auth";
+import express from "express";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Coop blueprint generation endpoint
-  app.post("/api/coop", async (req, res) => {
+  // API Routes
+  const apiRouter = express.Router();
+  
+  // Authentication routes
+  apiRouter.use('/auth', authRoutes);
+  
+  // Protected routes
+  apiRouter.use(authenticate);
+  
+  // Coop blueprint generation endpoint (now protected)
+  apiRouter.post("/coop", async (req, res) => {
     try {
       const { description } = req.body as { description: string };
       
@@ -24,12 +36,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsedConfig = parseInput(description);
       const config: CoopConfig = {
         ...parsedConfig,
-        description: description.trim()
+        description: description.trim(),
+        userId: req.user?.userId // Add user ID to the config
       };
 
       // Generate complete blueprint
       const blueprint = await generateBlueprint(config);
 
+      // TODO: Save blueprint to database with user association
+      
       const response: ApiResponse = {
         success: true,
         data: blueprint
@@ -46,11 +61,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Health check endpoint
+  // Health check endpoint (public)
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // Mount API routes under /api
+  app.use('/api', apiRouter);
+
+  // Create HTTP server
   const httpServer = createServer(app);
   return httpServer;
 }
