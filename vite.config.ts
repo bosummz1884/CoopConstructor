@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from "vite-tsconfig-paths";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 
@@ -11,21 +10,16 @@ export default defineConfig({
   plugins: [
     react(),
     tsconfigPaths({
-      // This will automatically use the paths from tsconfig.json
-      extensions: ['.ts', '.tsx', '.js', '.jsx'],
+      // Explicitly tell tsconfig-paths to use the root tsconfig.json
+      projects: [resolve(__dirname, 'tsconfig.json')],
     }),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
   ],
   server: {
     port: 3000,
+    // Vite's error overlay is enabled by default in development
+    hmr: {
+      overlay: true
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
@@ -46,11 +40,7 @@ export default defineConfig({
       },
       {
         find: '@shared',
-        replacement: resolve(__dirname, './shared')
-      },
-      {
-        find: '@assets',
-        replacement: resolve(__dirname, './attached_assets')
+        replacement: resolve(__dirname, 'shared')
       },
       {
         find: '@components',
@@ -61,8 +51,12 @@ export default defineConfig({
         replacement: resolve(__dirname, './src/lib')
       },
       {
-        find: '@context',
-        replacement: resolve(__dirname, './src/context')
+        find: '@contexts',
+        replacement: resolve(__dirname, './src/contexts')
+      },
+      {
+        find: '@assets',
+        replacement: resolve(__dirname, '../attached_assets')
       },
     ]
   },

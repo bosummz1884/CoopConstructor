@@ -1,14 +1,14 @@
 import React from "react";
-import { Button } from "./../components/ui/button";
-import { Card, CardContent } from "./../components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./../components/ui/tabs";
-import { useCoopContext } from "./../context/CoopContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCoopContext } from "@/contexts/CoopContext";
 import { downloadPDF } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
-import BlueprintViewer from "./../components/BlueprintViewer";
-import MaterialsList from "./../components/MaterialsList";
-import Instructions from "./../components/Instructions";
-import Dimensions from "./../components/Dimensions";
+import BlueprintViewer from "@/components/BlueprintViewer";
+import MaterialsList from "@/components/MaterialsList";
+import Instructions from "@/components/Instructions";
+import Dimensions from "@/components/Dimensions";
 import { CheckCircle, Download, RefreshCw, Box, List, Wrench, Ruler } from "lucide-react";
 
 export default function Results() {

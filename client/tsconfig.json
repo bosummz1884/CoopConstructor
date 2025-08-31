@@ -1,0 +1,30 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "types": ["vite/client", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@contexts/*": ["./src/contexts/*"],
+      "@assets/*": ["../attached_assets/*"],
+      "@shared/*": ["../shared/*"]
+    },
+    "noEmit": false,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts"
+  ],
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "./tsconfig.node.json" }
+  ]
+}

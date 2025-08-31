@@ -1,8 +1,17 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./../components/ui/card";
-import { Button } from "./../components/ui/button";
-import { useCoopContext } from "./../context/CoopContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useCoopContext } from "@/contexts/CoopContext";
 import { ShoppingCart, Check } from "lucide-react";
+
+interface Material {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  cost: number;
+  size: string;
+  // Add any other properties that your material objects have
+}
 
 export default function MaterialsList() {
   const { blueprint } = useCoopContext();
@@ -11,7 +20,7 @@ export default function MaterialsList() {
 
   const { materials, totalCost } = blueprint;
 
-  const materialsCost = materials.reduce((sum, material) => sum + material.cost, 0);
+  const materialsCost = materials.reduce((sum: number, material: Material) => sum + material.cost, 0);
   const hardwareCost = 125; // Fixed hardware cost
   const tax = (materialsCost + hardwareCost) * 0.08;
 
@@ -43,12 +52,12 @@ export default function MaterialsList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {materials.map((material, index) => (
+                {materials.map((material: Material, index: number) => (
                     <tr 
                       key={index} 
                       className="hover:bg-muted/30 transition-colors"
                       data-testid={`material-row-${index}`}
-                    >
+                    > 
                       <td className="px-6 py-4 text-sm font-medium text-foreground">{material.name}</td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">{material.quantity} {material.quantity === 1 ? 'piece' : 'pieces'}</td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">{material.size}</td>

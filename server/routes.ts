@@ -1,8 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
 import { parseInput } from "./utils/parseInput";
-import { generateBlueprint } from "./services/blueprintGenerator";
+import { blueprintGenerator } from "./services/blueprintGenerator";
 import { CoopConfig, ApiResponse } from "@shared/types";
 import authRoutes from "./routes/auth.routes";
 import { authenticate } from "./middleware/auth";
@@ -40,8 +39,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: req.user?.userId // Add user ID to the config
       };
 
-      // Generate complete blueprint
-      const blueprint = await generateBlueprint(config);
+      // Generate complete blueprint using the blueprintGenerator instance
+      const blueprint = await blueprintGenerator.generateBlueprint(config);
 
       // TODO: Save blueprint to database with user association
       
@@ -61,6 +60,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Error handling middleware
+  apiRouter.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('Error:', err);
+    const status = err.status || 500;
+    const message = err.message || 'Internal Server Error';
+    res.status(status).json({ success: false, error: message });
+  });
+
   // Health check endpoint (public)
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -70,6 +77,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', apiRouter);
 
   // Create HTTP server
-  const httpServer = createServer(app);
-  return httpServer;
+  const server = createServer(app);
+  return server;
 }

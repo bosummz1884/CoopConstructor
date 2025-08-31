@@ -1,23 +1,28 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./../components/ui/card";
-import { Button } from "./../components/ui/button";
-import { useCoopContext } from "./../context/CoopContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useCoopContext } from "@/contexts/CoopContext";
 import { Clock, ExternalLink, AlertTriangle } from "lucide-react";
+import type { InstructionStep as InstructionStepType } from "@shared/types";
+
+interface SafetyTip {
+  id: number;
+  text: string;
+}
 
 export default function Instructions() {
   const { blueprint } = useCoopContext();
 
-  if (!blueprint) return null;
+  if (!blueprint?.instructions) return null;
 
-  const { instructions } = blueprint;
+  const { instructions, safetyTips } = blueprint;
   const visibleSteps = instructions.slice(0, 3); // Show first 3 steps
   const remainingSteps = instructions.length - 3;
 
-  const safetyTips = [
-    "Always wear safety glasses when cutting or drilling",
-    "Use appropriate dust masks when cutting lumber", 
-    "Ensure all electrical work is done by a qualified electrician",
-    "Check local building codes before construction"
+  const safetyTipsList: SafetyTip[] = [
+    { id: 1, text: "Always wear safety glasses when cutting or drilling" },
+    { id: 2, text: "Use appropriate dust masks when cutting lumber" }, 
+    { id: 3, text: "Ensure all electrical work is done by a qualified electrician" },
+    { id: 4, text: "Check local building codes before construction" }
   ];
 
   return (
@@ -29,7 +34,7 @@ export default function Instructions() {
         </CardHeader>
         <CardContent>
           <div className="space-y-6" data-testid="build-steps">
-            {visibleSteps.map((step, index) => (
+            {visibleSteps.map((step: InstructionStepType, index: number) => (
               <div 
                 key={step.step} 
                 className={`border-l-4 ${index === 0 ? 'border-primary' : 'border-muted'} pl-6`}
@@ -42,14 +47,16 @@ export default function Instructions() {
                   <div className="flex-1">
                     <h4 className="font-medium text-foreground mb-2">{step.title}</h4>
                     <p className="text-muted-foreground mb-3">{step.description}</p>
-                    <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                      {step.details.map((detail, detailIndex) => (
-                        <li key={detailIndex}>• {detail}</li>
-                      ))}
-                    </ul>
+                    {step.details && step.details.length > 0 && (
+                      <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                        {step.details.map((detail: string, detailIndex: number) => (
+                          <li key={detailIndex}>• {detail}</li>
+                        ))}
+                      </ul>
+                    )}
                     <div className="mt-3 text-sm text-accent font-medium flex items-center space-x-1">
                       <Clock className="w-3 h-3" />
-                      <span>Estimated time: {step.estimatedTime}</span>
+                      <span>Estimated time: {step.time}</span>
                     </div>
                   </div>
                 </div>
@@ -82,8 +89,8 @@ export default function Instructions() {
         </CardHeader>
         <CardContent>
           <ul className="text-sm text-orange-800 space-y-1" data-testid="safety-tips">
-            {safetyTips.map((tip, index) => (
-              <li key={index}>• {tip}</li>
+            {safetyTipsList.map((tip: SafetyTip, index: number) => (
+              <li key={tip.id}>• {tip.text}</li>
             ))}
           </ul>
         </CardContent>

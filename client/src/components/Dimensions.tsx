@@ -1,8 +1,8 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./../components/ui/card";
-import { Button } from "./../components/ui/button";
-import { useCoopContext } from "./../context/CoopContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useCoopContext } from "@/contexts/CoopContext
 import { Ruler } from "lucide-react";
+import type { Cut } from "@shared/types";
 
 export default function Dimensions() {
   const { blueprint } = useCoopContext();
@@ -130,7 +130,7 @@ export default function Dimensions() {
           </CardHeader>
           <CardContent>
             <div className="text-xs space-y-2 font-mono" data-testid="cut-list">
-              {cutList.map((cut, index) => (
+              {cutList.map((cut: Cut, index: number) => (
                 <div key={index} className="flex justify-between">
                   <span>{cut.description}</span>
                   <span>{cut.pieces} pieces</span>

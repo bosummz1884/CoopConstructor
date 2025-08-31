@@ -17,9 +17,11 @@ export type TokenPayload = z.infer<typeof tokenPayloadSchema>;
 
 // Generate a JWT token
 export const generateToken = (payload: Omit<TokenPayload, 'iat' | 'exp'>) => {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+  return jwt.sign(
+    payload, 
+    JWT_SECRET, 
+    { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
+  );
 };
 
 // Verify a JWT token
