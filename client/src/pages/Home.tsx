@@ -1,17 +1,17 @@
 import React from "react";
 import { Home as HomeIcon, Settings, HelpCircle } from "lucide-react";
-import CoopForm from "@/components/CoopForm";
-import { useCoopContext } from "@/context/CoopContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import CoopForm from "./../components/CoopForm";
+import { useCoopContext } from "./../context/CoopContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./../components/ui/tabs";
+import { Card, CardContent } from "./../components/ui/card";
+import { Button } from "./../components/ui/button";
 import { CheckCircle, Download, Box, List, Wrench, Ruler } from "lucide-react";
 import { downloadPDF } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
-import BlueprintViewer from "@/components/BlueprintViewer";
-import MaterialsList from "@/components/MaterialsList";
-import Instructions from "@/components/Instructions";
-import Dimensions from "@/components/Dimensions";
+import BlueprintViewer from "./../components/BlueprintViewer";
+import MaterialsList from "./../components/MaterialsList";
+import Instructions from "./../components/Instructions";
+import Dimensions from "./../components/Dimensions";
 
 export default function Home() {
   const { blueprint } = useCoopContext();

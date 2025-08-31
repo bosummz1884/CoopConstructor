@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useCoopContext } from "@/context/CoopContext";
+import { Card, CardContent, CardHeader, CardTitle } from "./../components/ui/card";
+import { Button } from "./../components/ui/button";
+import { useCoopContext } from "./../context/CoopContext";
 import { ShoppingCart, Check } from "lucide-react";
 
 export default function MaterialsList() {

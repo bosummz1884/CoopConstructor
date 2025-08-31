@@ -1,10 +1,10 @@
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, Environment } from "@react-three/drei";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "./../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./../components/ui/card";
 import CoopModel from "@/three/CoopModel";
-import { useCoopContext } from "@/context/CoopContext";
+import { useCoopContext } from "./../context/CoopContext";
 import { Home, Eye, ArrowUp, Expand, Mouse } from "lucide-react";
 
 export default function BlueprintViewer() {

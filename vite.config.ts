@@ -10,7 +10,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [
     react(),
-    tsconfigPaths(),
+    tsconfigPaths({
+      // This will automatically use the paths from tsconfig.json
+      extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    }),
     runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
@@ -58,8 +61,8 @@ export default defineConfig({
         replacement: resolve(__dirname, './src/lib')
       },
       {
-        find: '@contexts',
-        replacement: resolve(__dirname, './src/contexts')
+        find: '@context',
+        replacement: resolve(__dirname, './src/context')
       },
     ]
   },
