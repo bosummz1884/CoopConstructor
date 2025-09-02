@@ -49,28 +49,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: blueprint
       };
 
-      res.json(response);
+      return res.json(response);
     } catch (error) {
       console.error("Error generating blueprint:", error);
       const response: ApiResponse = {
         success: false,
         error: "Failed to generate blueprint. Please try again."
       };
-      res.status(500).json(response);
+      return res.status(500).json(response);
     }
   });
 
   // Error handling middleware
-  apiRouter.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  apiRouter.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error('Error:', err);
     const status = err.status || 500;
     const message = err.message || 'Internal Server Error';
-    res.status(status).json({ success: false, error: message });
+    return res.status(status).json({ success: false, error: message });
   });
 
   // Health check endpoint (public)
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  apiRouter.get('/health', (_req: express.Request, res: express.Response) => {
+    return res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
   // Mount API routes under /api

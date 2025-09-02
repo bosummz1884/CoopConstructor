@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { useCoopContext } from "@/contexts/CoopContext";
 import { generateCoopBlueprint } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Sparkles, Save } from "lucide-react";
+import { Sparkles, Save } from "lucide-react";
 
 const formSchema = z.object({
   description: z.string().min(10, "Please provide a more detailed description"),

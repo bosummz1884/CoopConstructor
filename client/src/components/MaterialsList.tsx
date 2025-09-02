@@ -2,16 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCoopContext } from "@/contexts/CoopContext";
 import { ShoppingCart, Check } from "lucide-react";
-
-interface Material {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  cost: number;
-  size: string;
-  // Add any other properties that your material objects have
-}
+import type { Material } from "@shared/types";
 
 export default function MaterialsList() {
   const { blueprint } = useCoopContext();

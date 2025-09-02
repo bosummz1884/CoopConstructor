@@ -1,98 +1,52 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCoopContext } from "@/contexts/CoopContext";
-import { Clock, ExternalLink, AlertTriangle } from "lucide-react";
-import type { InstructionStep as InstructionStepType } from "@shared/types";
-
-interface SafetyTip {
-  id: number;
-  text: string;
-}
+import { Clock, ExternalLink } from "lucide-react";
+import type { BuildStep } from "@shared/types";
 
 export default function Instructions() {
   const { blueprint } = useCoopContext();
 
   if (!blueprint?.instructions) return null;
 
-  const { instructions, safetyTips } = blueprint;
+  const { instructions } = blueprint;
   const visibleSteps = instructions.slice(0, 3); // Show first 3 steps
   const remainingSteps = instructions.length - 3;
-
-  const safetyTipsList: SafetyTip[] = [
-    { id: 1, text: "Always wear safety glasses when cutting or drilling" },
-    { id: 2, text: "Use appropriate dust masks when cutting lumber" }, 
-    { id: 3, text: "Ensure all electrical work is done by a qualified electrician" },
-    { id: 4, text: "Check local building codes before construction" }
-  ];
 
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Step-by-Step Build Instructions</CardTitle>
-          <p className="text-muted-foreground">Follow these detailed instructions to build your chicken coop safely and efficiently.</p>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6" data-testid="build-steps">
-            {visibleSteps.map((step: InstructionStepType, index: number) => (
-              <div 
-                key={step.step} 
-                className={`border-l-4 ${index === 0 ? 'border-primary' : 'border-muted'} pl-6`}
-                data-testid={`step-${step.step}`}
-              >
-                <div className="flex items-start space-x-4">
-                  <div className={`w-8 h-8 ${index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'} rounded-full flex items-center justify-center font-bold text-sm`}>
-                    {step.step}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-foreground mb-2">{step.title}</h4>
-                    <p className="text-muted-foreground mb-3">{step.description}</p>
-                    {step.details && step.details.length > 0 && (
-                      <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                        {step.details.map((detail: string, detailIndex: number) => (
-                          <li key={detailIndex}>• {detail}</li>
-                        ))}
-                      </ul>
-                    )}
-                    <div className="mt-3 text-sm text-accent font-medium flex items-center space-x-1">
-                      <Clock className="w-3 h-3" />
-                      <span>Estimated time: {step.time}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {remainingSteps > 0 && (
-              <div className="text-center py-4">
-                <Button 
-                  variant="link" 
-                  className="text-accent hover:text-accent/80 font-medium"
-                  data-testid="button-view-all-steps"
-                >
-                  <ExternalLink className="w-4 h-4 mr-1" />
-                  View All {instructions.length} Steps
-                </Button>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Safety Tips */}
-      <Card className="bg-orange-50 border-orange-200">
-        <CardHeader>
-          <CardTitle className="text-orange-900 flex items-center space-x-2">
-            <AlertTriangle className="w-5 h-5 text-orange-600" />
-            <span>Safety Reminders</span>
+          <CardTitle className="flex items-center space-x-2">
+            <Clock className="w-5 h-5" />
+            <span>Build Instructions</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ul className="text-sm text-orange-800 space-y-1" data-testid="safety-tips">
-            {safetyTipsList.map((tip: SafetyTip, index: number) => (
-              <li key={tip.id}>• {tip.text}</li>
-            ))}
-          </ul>
+        <CardContent className="space-y-6">
+          {visibleSteps.map((step: BuildStep) => (
+            <div key={step.step} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium">{step.title}</h3>
+                <span className="text-sm text-muted-foreground">{step.estimatedTime}</span>
+              </div>
+              <p className="text-sm">{step.description}</p>
+              {step.details && step.details.length > 0 && (
+                <ul className="text-sm space-y-1 list-disc pl-5 text-muted-foreground">
+                  {step.details.map((detail, i) => (
+                    <li key={i}>{detail}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+          {remainingSteps > 0 && (
+            <div className="text-center">
+              <Button variant="link" className="mt-4 text-accent hover:text-accent/80 font-medium">
+                <ExternalLink className="w-4 h-4 mr-1" />
+                View All {instructions.length} Steps
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

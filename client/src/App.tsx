@@ -1,5 +1,4 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { Routes, Route } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,24 +6,19 @@ import { CoopProvider } from "./contexts/CoopContext";
 import Home from "@/pages/Home";
 import Results from "@/pages/Results";
 import NotFound from "@/pages/not-found";
-
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/results" component={Results} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+import { queryClient } from "./lib/queryClient";
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <CoopProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/results" element={<Results />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
           <Toaster />
-          <Router />
         </CoopProvider>
       </TooltipProvider>
     </QueryClientProvider>

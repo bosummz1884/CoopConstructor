@@ -46,8 +46,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { user, token } = await api.login({ email, password });
-      setUser(user);
+      const { token } = await api.login({ email, password });
+      // Get the full user profile which includes all required fields
+      const userProfile = await api.getProfile();
+      setUser(userProfile);
       api.setAuthToken(token);
     } catch (error) {
       console.error('Login failed:', error);
@@ -60,8 +62,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const register = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { user, token } = await api.register({ email, password });
-      setUser(user);
+      const { token } = await api.register({ email, password });
+      // Get the full user profile which includes all required fields
+      const userProfile = await api.getProfile();
+      setUser(userProfile);
       api.setAuthToken(token);
     } catch (error) {
       console.error('Registration failed:', error);

@@ -1,4 +1,3 @@
-import React from "react";
 import { Home as HomeIcon, Settings, HelpCircle } from "lucide-react";
 import CoopForm from "@/components/CoopForm";
 import { useCoopContext } from "@/contexts/CoopContext";
